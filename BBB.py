@@ -1,5 +1,6 @@
 import streamlit as st
 from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
@@ -7,12 +8,12 @@ import time
 
 # Set up Selenium WebDriver options
 chrome_options = Options()
-chrome_options.add_argument("--headless")
-chrome_options.add_argument("--no-sandbox")
-chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument("--headless")  # Run Chrome in headless mode (no GUI)
+chrome_options.add_argument("--no-sandbox")  # Bypass OS security model, REQUIRED for Docker
+chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
 
-# Initialize WebDriver (Make sure to specify the correct path to your chromedriver)
-driver = webdriver.Chrome(executable_path='/path/to/chromedriver', options=chrome_options)
+# Initialize WebDriver (webdriver-manager handles the ChromeDriver setup)
+driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
 
 # Streamlit UI
 st.title('BBB Web Scraper')
@@ -50,5 +51,5 @@ if st.button('Scrape'):
     finally:
         driver.quit()
 
-# Close the driver
+# Close the driver (outside the button press)
 driver.quit()
