@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import streamlit as st
 
 # Streamlit UI setup
-st.title('BBB Response Portal Scraper')
+st.title('BBB Complaint Details Scraper')
 
 # Input for the code
 code = st.text_input('Enter the code:', '')
@@ -35,12 +35,12 @@ if st.button('Submit and Scrape'):
                 # Parse the page content with BeautifulSoup
                 soup = BeautifulSoup(response.content, 'html.parser')
                 
-                # Extract and display specific data (adjust the selector based on your needs)
-                # Example: Extract text from a specific div
-                data = soup.find('div', {'id': 'specific_id'}).get_text(strip=True)  # Adjust the ID to your target
+                # Extract and display specific data
+                # Adjust the ID to your target
+                complaint_details = soup.find('div', {'id': 'section-to-print'}).get_text(strip=True)
                 
                 # Display the scraped data in the Streamlit app
-                st.write('Scraped Data:', data)
+                st.write('Complaint Details:', complaint_details)
             else:
                 st.error(f'Failed to retrieve the webpage. Status code: {response.status_code}')
             
