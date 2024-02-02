@@ -1,55 +1,44 @@
-import streamlit as st
-from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.keys import Keys
+import httpx
 from bs4 import BeautifulSoup
-import time
+import streamlit as st
 
-# Set up Selenium WebDriver options
-chrome_options = Options()
-chrome_options.add_argument("--headless")  # Run Chrome in headless mode (no GUI)
-chrome_options.add_argument("--no-sandbox")  # Bypass OS security model, REQUIRED for Docker
-chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+# Streamlit UI setup
+st.title('BBB Response Page Scraper')
 
-# Initialize WebDriver (webdriver-manager handles the ChromeDriver setup)
-driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
-
-# Streamlit UI
-st.title('BBB Web Scraper')
-
-# Input for code
+# Input for the code
 code = st.text_input('Enter the code:', '')
 
-# Button to trigger scraping
-if st.button('Scrape'):
-    try:
-        # Navigate to the page
-        driver.get("https://respond.bbb.org/respond/")
-        
-        # Enter the code into the input field (adjust the selector as needed)
-        input_element = driver.find_element_by_id('input_id')
-        input_element.send_keys(code)
-        
-        # Click the login button (adjust the selector as needed)
-        driver.find_element_by_id('login_button_id').click()
-        
-        # Wait for the content to load
-        time.sleep(5)  # Adjust the timing based on page load times
-        
-        # Parse the page source with BeautifulSoup
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
-        
-        # Extract data (adjust the selector based on your needs)
-        data = soup.find('div', {'id': 'content_id'}).get_text(strip=True)
-        
-        # Display the scraped data in the Streamlit app
-        st.write('Scraped Data:', data)
-        
-    except Exception as e:
-        st.error(f'An error occurred: {e}')
-    finally:
-        driver.quit()
+# Button to trigger form submission and scraping
+if st.button('Submit and Scrape'):
+    if code:
+        try:
+            # Endpoint where the form data is sent
+            url = 'https://respond.bbb.org/respond/'
 
-# Close the driver (outside the button press)
-driver.quit()
+            # Data payload for the form
+            data = {
+                'input_name': code  # Replace 'input_name' with the actual name of the input field
+            }
+            
+            # Simulate form submission (POST request)
+            response = httpx.post(url, data=data)
+            
+            # Check if the request was successful
+            if response.status_code == 200:
+                # Parse the page content with BeautifulSoup
+                soup = BeautifulSoup(response.content, 'html.parser')
+                
+                # Extract and display specific data (adjust the selector based on your needs)
+                # Example: Extract text from a div with id 'content_id'
+                data = soup.find('div', {'id': 'content_id'}).get_text(strip=True)
+                
+                # Display the scraped data in the Streamlit app
+                st.write('Scraped Data:', data)
+            else:
+                st.error(f'Failed to retrieve the webpage. Status code: {response.status_code}')
+            
+        except Exception as e:
+            st.error(f'An error occurred: {e}')
+    else:
+        st.error('Please enter a code to scrape.')
+
