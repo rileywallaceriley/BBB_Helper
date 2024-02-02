@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import streamlit as st
 
 # Streamlit UI setup
-st.title('BBB Response Page Scraper')
+st.title('BBB Response Portal Scraper')
 
 # Input for the code
 code = st.text_input('Enter the code:', '')
@@ -17,11 +17,18 @@ if st.button('Submit and Scrape'):
 
             # Data payload for the form
             data = {
-                'input_name': code  # Replace 'input_name' with the actual name of the input field
+                'cd': code  # The name of the input field for the code
+            }
+            
+            # Headers may be required for the server to accept the request
+            headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Referer': 'https://respond.bbb.org/respond/'
             }
             
             # Simulate form submission (POST request)
-            response = httpx.post(url, data=data)
+            with httpx.Client() as client:
+                response = client.post(url, data=data, headers=headers)
             
             # Check if the request was successful
             if response.status_code == 200:
@@ -29,8 +36,8 @@ if st.button('Submit and Scrape'):
                 soup = BeautifulSoup(response.content, 'html.parser')
                 
                 # Extract and display specific data (adjust the selector based on your needs)
-                # Example: Extract text from a div with id 'content_id'
-                data = soup.find('div', {'id': 'content_id'}).get_text(strip=True)
+                # Example: Extract text from a specific div
+                data = soup.find('div', {'id': 'specific_id'}).get_text(strip=True)  # Adjust the ID to your target
                 
                 # Display the scraped data in the Streamlit app
                 st.write('Scraped Data:', data)
@@ -41,4 +48,3 @@ if st.button('Submit and Scrape'):
             st.error(f'An error occurred: {e}')
     else:
         st.error('Please enter a code to scrape.')
-
